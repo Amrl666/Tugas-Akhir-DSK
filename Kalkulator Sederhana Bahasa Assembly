@@ -1,0 +1,100 @@
+; Kalkulator sederhana dengan emu8086 8 bit
+;
+; Program meminta masukan user untuk memilih jenis operasi
+; dan meminta dua bilangan untuk dilakukan operasi
+;
+; Program ini menggunakan regitster AL dan AX
+;
+
+.model small
+.stack 100h
+.data
+	
+	msg1 db "Masukkan nomor operasi: 0 untuk Penambahan, 1 untuk Pengurangan, 2 untuk Perkalian, 3 untuk Pembagian$"
+	msg2 db 0dh,0ah,"Masukkan bilangan 1 : $"
+	msg3 db 0dh,0ah,"Masukkan bilangan 2 : $"
+	msg4 db 0dh,0ah,"Hasil Operasi: $"
+
+.code
+	mov ax, @data
+	mov ds, ax
+	
+	; Meminta masukan user untuk memilih operasi
+	mov ah, 9
+	lea dx, msg1
+	int 21h
+	
+	; Membaca masukan user dan memasukkannya ke register AL
+	mov ah, 1
+	int 21h
+	sub al, 30h
+	
+	; Meminta masukan user untuk bilangan 1
+	mov ah, 9
+	lea dx, msg2
+	int 21h
+	
+	; Membaca masukan user dan memasukkannya ke register AX
+	mov ah, 1
+	int 21h
+	sub ax, 30h
+	
+	; Meminta masukan user untuk bilangan 2
+	mov ah, 9
+	lea dx, msg3
+	int 21h
+	
+	; Membaca masukan user dan memasukkannya ke register BX
+	mov ah, 1
+	int 21h
+	sub bx, 30h
+	
+	; Menentukan operasi yang dipilih user
+	cmp al, '0'
+	je penambahan
+	cmp al, '1'
+	je pengurangan
+	cmp al, '2'
+	je perkalian
+	cmp al, '3'
+	je pembagian
+	
+	; Operasi penambahan
+penambahan:
+	add ax, bx
+	
+	; Operasi pengurangan
+pengurangan:
+	sub ax, bx
+	
+	; Operasi perkalian
+perkalian:
+	mov bx, ax
+	mul bx
+	
+	; Operasi pembagian
+pembagian:
+	mov bx, ax
+	div bx
+	
+	; Menampilkan hasil operasi
+	mov ah, 9
+	lea dx, msg4
+	int 21h
+	
+	; Menampilkan hasilnya
+	mov ah, 2
+	mov dl, al
+	int 21h
+	
+	; Menampilkan nilai ax
+	mov ah, 2
+	mov dl, ah
+	int 21h
+	mov ah, 2
+	mov dl, al
+	int 21h
+	
+	mov ah, 4ch
+	int 21h
+end
