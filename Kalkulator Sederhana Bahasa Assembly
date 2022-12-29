@@ -239,4 +239,4 @@ exit:
  ; Akhir dari program
  mov eax, 1
  mov ebx, 0
- int 80h3
+ int 80h
