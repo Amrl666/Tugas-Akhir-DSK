@@ -1,100 +1,242 @@
-; Kalkulator sederhana dengan emu8086 8 bit
-;
-; Program meminta masukan user untuk memilih jenis operasi
-; dan meminta dua bilangan untuk dilakukan operasi
-;
-; Program ini menggunakan regitster AL dan AX
-;
 
-.model small
-.stack 100h
-.data
-	
-	msg1 db "Masukkan nomor operasi: 0 untuk Penambahan, 1 untuk Pengurangan, 2 untuk Perkalian, 3 untuk Pembagian$"
-	msg2 db 0dh,0ah,"Masukkan bilangan 1 : $"
-	msg3 db 0dh,0ah,"Masukkan bilangan 2 : $"
-	msg4 db 0dh,0ah,"Hasil Operasi: $"
-
-.code
-	mov ax, @data
-	mov ds, ax
-	
-	; Meminta masukan user untuk memilih operasi
-	mov ah, 9
-	lea dx, msg1
-	int 21h
-	
-	; Membaca masukan user dan memasukkannya ke register AL
-	mov ah, 1
-	int 21h
-	sub al, 30h
-	
-	; Meminta masukan user untuk bilangan 1
-	mov ah, 9
-	lea dx, msg2
-	int 21h
-	
-	; Membaca masukan user dan memasukkannya ke register AX
-	mov ah, 1
-	int 21h
-	sub ax, 30h
-	
-	; Meminta masukan user untuk bilangan 2
-	mov ah, 9
-	lea dx, msg3
-	int 21h
-	
-	; Membaca masukan user dan memasukkannya ke register BX
-	mov ah, 1
-	int 21h
-	sub bx, 30h
-	
-	; Menentukan operasi yang dipilih user
-	cmp al, '0'
-	je penambahan
-	cmp al, '1'
-	je pengurangan
-	cmp al, '2'
-	je perkalian
-	cmp al, '3'
-	je pembagian
-	
-	; Operasi penambahan
-penambahan:
-	add ax, bx
-	
-	; Operasi pengurangan
-pengurangan:
-	sub ax, bx
-	
-	; Operasi perkalian
-perkalian:
-	mov bx, ax
-	mul bx
-	
-	; Operasi pembagian
-pembagian:
-	mov bx, ax
-	div bx
-	
-	; Menampilkan hasil operasi
-	mov ah, 9
-	lea dx, msg4
-	int 21h
-	
-	; Menampilkan hasilnya
-	mov ah, 2
-	mov dl, al
-	int 21h
-	
-	; Menampilkan nilai ax
-	mov ah, 2
-	mov dl, ah
-	int 21h
-	mov ah, 2
-	mov dl, al
-	int 21h
-	
-	mov ah, 4ch
-	int 21h
-end
+section .data 
+ ; Messages
+ msg1 db 10,'-Kalkulator Sederhana-',10,0
+ lmsg1 equ $ - msg1
+ msg2 db 10,'Angka I: ',0
+ lmsg2 equ $ - msg2
+ msg3 db 'Angka II: ',0
+ lmsg3 equ $ - msg3
+ msg4 db 10,'1. Penjumlahan',10,0
+ lmsg4 equ $ - msg4
+ msg5 db '2. Pengurangan',10,0
+ lmsg5 equ $ - msg5
+ msg6 db '3. Perkalian',10,0
+ lmsg6 equ $ - msg6
+ msg7 db '4. Pembagian',10,0
+ lmsg7 equ $ - msg7
+ msg8 db 'Pilih Operasi: ',0
+ lmsg8 equ $ - msg8
+ msg9 db 10,'Hasil Operasi: ',0
+ lmsg9 equ $ - msg9
+ msg10 db 10,'Pilihan Salah',10,0
+ lmsg10 equ $ - msg10
+ nlinea db 10,10,0
+ lnlinea equ $ - nlinea
+section .bss
+ ; Spaces reserved for storing the values provided by the user.
+ opc: resb 2
+ num1: resb 2
+ num2: resb 2
+ result: resb 2
+section .text
+ global _start
+_start:
+ 
+ ; Menampilkan isi text dari variabel msg1
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg1
+ mov edx, lmsg1
+ int 80h
+ ; Menampilkan isi text dari variabel msg2
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg2
+ mov edx, lmsg2
+ int 80h
+ ; Input variabel num1
+ mov eax, 3
+ mov ebx, 0
+ mov ecx, num1
+ mov edx, 2
+ int 80h
+ ; Menampilkan isi text dari variabel msg3
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg3
+ mov edx, lmsg3
+ int 80h
+ ; Input variabel num2
+ mov eax, 3
+ mov ebx, 0
+ mov ecx, num2
+ mov edx, 2
+ int 80h
+ ; Menampilkan isi text dari variabel msg4
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg4
+ mov edx, lmsg4
+ int 80h
+ ; Menampilkan isi text dari variabel msg5
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg5
+ mov edx, lmsg5
+ int 80h
+ ; Menampilkan isi text dari variabel msg6
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg6
+ mov edx, lmsg6
+ int 80h
+ ; Menampilkan isi text dari variabel msg7
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg7
+ mov edx, lmsg7
+ int 80h
+ulangi:
+ ; Menampilkan isi text dari variabel msg8
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg8
+ mov edx, lmsg8
+ int 80h
+ ; Input jenis operasi
+ mov ebx,0
+ mov ecx,opc
+ mov edx,2
+ mov eax,3
+ int 80h
+ mov ah, [opc] ; memindahkan value dari jenis operasi ke registry ah
+ sub ah, '0' ; Convert dari ascii ke decimal
+ ; Membandingkan value dari jenis operasi yang dimasukkan untuk mengetahui jenis operasi 
+;yang akan dilakukan
+ cmp ah, 1
+ je add
+ cmp ah, 2
+ je subtract
+ cmp ah, 3
+ je multiply
+ cmp ah, 4
+ je divide
+ ; Jika jenis operasi yang dimasukkan tidak dalam daftar
+ ; maka akan tampil pesan error dan aplikasi tertutup.
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg10
+ mov edx, lmsg10
+ int 80h
+ jmp ulangi
+add:
+ ; simpan nilai num1 dan num2 pada register al and bl
+ mov al, [num1]
+ mov bl, [num2]
+ ; Convert dari ascii ke decimal
+ sub al, '0'
+ sub bl, '0'
+ ; Proses penjumlahan
+ add al, bl
+ ; konversi dari decimal ke ascii
+ add al, '0'
+ ; move the result
+ mov [result], al
+ ; Menampilkan isi text dari variabel msg9
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg9
+ mov edx, lmsg9
+ int 80h
+ ; Menampilkan hasil operasi
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, result
+ mov edx, 1
+ int 80h
+ ; Proses penjumlahan selesai
+ jmp exit
+subtract:
+ ; simpan nilai num1 dan num2 pada register al and bl
+ mov al, [num1]
+ mov bl, [num2]
+ ; Convert dari ascii ke decimal
+ sub al, '0'
+ sub bl, '0'
+ ; Proses pengurangan
+ sub al, bl
+ ; konversi dari decimal ke ascii
+ add al, '0'
+ ; move the result
+ mov [result], al
+ ; Menampilkan isi text dari variabel msg9
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg9
+ mov edx, lmsg9
+ int 80h
+ ; Menampilkan hasil operasi
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, result
+ mov edx, 1
+ int 80h
+ ; Proses pengurangan selesai
+ jmp exit
+multiply:
+ ; simpan nilai num1 dan num2 pada register al and bl
+ mov al, [num1]
+ mov bl, [num2]
+ ; Convert dari ascii ke decimal
+ sub al, '0'
+ sub bl, '0'
+ ; Proses perkalian. AX = AL x BL
+ mul bl
+ ; konversi dari decimal ke ascii
+ add ax, '0'
+ ; move the result
+ mov [result], ax
+ ; Menampilkan isi text dari variabel msg9
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg9
+ mov edx, lmsg9
+ int 80h
+ ; Menampilkan hasil operasi
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, result
+ mov edx, 1
+ int 80h
+ ; Proses perkalian selesai
+ jmp exit
+divide:
+ ; simpan nilai num1 dan num2 pada register al and bl
+ mov al, [num1]
+ mov bl, [num2]
+ mov dx, 0
+ mov ah, 0
+ ; Convert dari ascii ke decimall
+ sub al, '0'
+ sub bl, '0'
+ ; Proses pembagian. AX = AL / BL
+ div bl
+ ; Konversi dari decimal ke ascii
+ add ax, '0'
+ ; move the result
+ mov [result], ax
+ ; Menampilkan isi text dari variabel msg9
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, msg9
+ mov edx, lmsg9
+ int 80h
+ ; Print on screen the result
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, result
+ mov edx, 1
+ int 80h
+ ; Proses pembagian selesai
+ jmp exit
+exit:
+ mov eax, 4
+ mov ebx, 1
+ mov ecx, nlinea
+ mov edx, lnlinea
+ int 80h
+ ; Akhir dari program
+ mov eax, 1
+ mov ebx, 0
+ int 80h3
